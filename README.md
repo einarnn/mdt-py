@@ -6,11 +6,24 @@ Create a virtualenv and then `pip install -r requirements.txt`.
 
 ## Generate Python Code From Protos
 
-Run the script `gen_protos.sh`. This assumes a couple of things:
+Run the script `gen_from_proto.sh`. This assumes a couple of things:
 
-- The protobuf files from `bigmuddy-network-telemetry-proto` are available locally in a git clone. These can be cloned from [here](https://github.com/cisco/bigmuddy-network-telemetry-proto.git). They are available under the path `/opt/git-repos/bigmuddy-network-telemetry-proto`. If not, the environment variable `PROTO_ARCHIVE` in [`gen_protos.sh`](gen_protos.sh) should be edited to reflect location.
+- The protobuf files from `bigmuddy-network-telemetry-proto` are available locally in a git clone. These can be cloned from [here](https://github.com/cisco/bigmuddy-network-telemetry-proto.git). They are available under the path `/opt/git-repos/bigmuddy-network-telemetry-proto`. If not, the environment variable `PROTO_ARCHIVE` in [`gen_from_proto.sh`](gen_from_proto.sh) should be edited to reflect location.
 - The Google proto tools are installed (preferably in a virtualenv!), the module `grpcio-tools`
 
+Running this script should look something like:
+
+```
+$ ls
+README.md         proto_to_dict.py  server.py
+gen_from_proto.sh requirements.txt  walk_fields.py
+$ ./gen_from_proto.sh
+$ ls
+README.md                     proto_to_dict.py    telemetry_pb2_grpc.py
+gen_from_proto.sh             requirements.txt    walk_fields.py
+mdt_grpc_dialout_pb2.py	      server.py
+mdt_grpc_dialout_pb2_grpc.py  telemetry_pb2.py
+```
 
 ## Run The Sample Server
 
