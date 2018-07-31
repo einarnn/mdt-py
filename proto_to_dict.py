@@ -16,6 +16,7 @@
 
 import logging
 import sys
+import six
 from google.protobuf.message import Message
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -67,7 +68,7 @@ def bytes_to_string (bytes):
     """
     Convert a byte array into a string aa:bb:cc
     """
-    return ":".join(["{:02x}".format(int(ord(c))) for c in bytes])
+    return ":".join(["{:02x}".format(i) for i in six.iterbytes(bytes)])
 
 
 def field_type_to_fn(msg, field):
@@ -87,7 +88,6 @@ def proto_to_dict(msg):
     result_dict = {}
     extensions = {}
     for field, value in msg.ListFields():
-        logger.debug('Converting ({}, {})'.format(field, value))
         conversion_fn = field_type_to_fn(msg, field)
         # Skip extensions
         if not field.is_extension:
