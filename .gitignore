@@ -1,3 +1,10 @@
+# project-specific ignores
+mdt_grpc_dialout_pb2.py
+mdt_grpc_dialout_pb2_grpc.py
+telemetry_pb2.py
+telemetry_pb2_grpc.py
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
