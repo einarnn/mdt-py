@@ -12,6 +12,24 @@ if [ ! -d "$PROTO_ARCHIVE" ]; then
     exit 1
 fi
 
+#
+# simple function to check for existence of a binary on the current
+# path
+#
+checkExists() {
+    bin=`command -v $1`
+    if [ -z "$bin" ]
+    then
+	echo this script requires $1 to be on your path
+	exit 1
+    fi
+}
+
+#
+# check we have executables we need
+#
+checkExists protoc
+
 # Generate dialout code
 python -m grpc_tools.protoc \
     -I$PROTO_ARCHIVE/mdt_grpc_dialout \
