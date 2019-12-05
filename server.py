@@ -17,7 +17,7 @@ import time
 
 
 BUSY_WAIT = 24 * 60 * 60
-SERVER_PORT = "0.0.0.0:2345"
+SERVER_PORT = "0.0.0.0:57850"
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class TestServicer(mdt_grpc_dialout_pb2_grpc.gRPCMdtDialoutServicer):
             #
             # Convert telemetry message as a whole into a Python dict
             #
-            d = proto_to_dict(t)
+            # d = proto_to_dict(t)
 
             #
             # Walk data_gpbkv fields per YANG Suite code
@@ -62,10 +62,11 @@ class TestServicer(mdt_grpc_dialout_pb2_grpc.gRPCMdtDialoutServicer):
                 #     logger.debug(l)
 
                 # json dict
-                if d:
-                    for l in json.dumps(d, indent=2).splitlines():
-                        logger.debug(l)
+                # if d:
+                #     for l in json.dumps(d, indent=2).splitlines():
+                #         logger.debug(l)
 
+                print(t)
                 logger.debug('<-- CALLBACK END')
 
             #
