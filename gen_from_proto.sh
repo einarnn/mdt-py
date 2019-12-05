@@ -34,12 +34,12 @@ checkExists protoc
 python -m grpc_tools.protoc \
     -I$PROTO_ARCHIVE/mdt_grpc_dialout \
     --python_out=. \
-    --grpc_python_out=. \
+    --python_grpc_out=. \
     $PROTO_ARCHIVE/mdt_grpc_dialout/mdt_grpc_dialout.proto
 
 # Generate Telemetry message code
 python -m grpc_tools.protoc \
     -I$PROTO_ARCHIVE \
     --python_out=. \
-    --grpc_python_out=. \
+    --python_grpc_out=. \
     $PROTO_ARCHIVE/telemetry.proto
