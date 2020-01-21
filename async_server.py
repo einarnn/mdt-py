@@ -16,6 +16,7 @@ import json
 import logging
 import mdt_grpc_dialout_pb2
 import time
+from argparse import ArgumentParser
 
 
 logger = logging.getLogger(__name__)
@@ -73,29 +74,47 @@ class TelemetryReceiver(gRPCMdtDialoutBase):
 #
 # Really simple gRPC server dor dialout telemetry. No TLS, plain TCP.
 #
-async def serve(host='0.0.0.0', port=57850):
+async def serve(bind_address='0.0.0.0', port=57850):
 
     logger.debug('Create gRPC server')
     server = Server([TelemetryReceiver()])
 
     with graceful_exit([server]):
-        await server.start(host, port)
-        logger.debug('serving on port 57850')
+        await server.start(bind_address, port)
+        logger.debug('serving on %s:%d', bind_address, port)
         await server.wait_closed()
 
 
 if __name__ == "__main__":
 
     #
+    # parse arguments
+    #
+    parser = ArgumentParser(description='Options:')
+    parser.add_argument(
+        '-b', '--bind-address', type=str,
+        default='0.0.0.0',
+        help="Specify bind address (default=0.0.0.0)")
+    parser.add_argument(
+        '-p', '--port', type=int,
+        default=57850,
+        help="Specify telemetry listening port (default=57850)")
+    parser.add_argument(
+        '-v', '--verbose', action='store_true',
+        help="Exceedingly verbose logging to the console")
+    args = parser.parse_args()
+
+    #
     # setup logging to have a wauy to see what's happening
     #
-    handler = logging.StreamHandler()
-    handler.setFormatter(
-        logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s'))
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
+    if args.verbose:
+        handler = logging.StreamHandler()
+        handler.setFormatter(
+            logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s'))
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
 
     #
     # run the server
     #
-    asyncio.run(serve())
+    asyncio.run(serve(bind_address=args.bind_address, port=args.port))
