@@ -17,12 +17,12 @@ import time
 
 
 BUSY_WAIT = 24 * 60 * 60
-SERVER_PORT = "0.0.0.0:2345"
+SERVER_PORT = "0.0.0.0:57000"
 
 
 logger = logging.getLogger(__name__)
-logger_grpc = logging.getLogger("grpc._server")
-logger_p2d = logging.getLogger("proto_to_dict")
+# logger_grpc = logging.getLogger("grpc._server")
+# logger_p2d = logging.getLogger("proto_to_dict")
 
 logging_lock = Lock()
 
@@ -33,6 +33,7 @@ class TestServicer(mdt_grpc_dialout_pb2_grpc.gRPCMdtDialoutServicer):
         self.msgs_recvd = 0
     def MdtDialout(self, request_iterator, context):
         for req in request_iterator:
+            logger.debug('starting processing a req')
             self.msgs_recvd += 1
             t = Telemetry()
             t.ParseFromString(req.data)
