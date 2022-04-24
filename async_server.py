@@ -34,6 +34,7 @@ class TelemetryReceiver(gRPCMdtDialoutBase):
         while True:
             logger.debug('awaiting telemetry messge...')
             req: MdtDialoutArgs = await stream.recv_message()
+            self.msgs_recvd += 1
             t = Telemetry()
             t.ParseFromString(req.data)
 
@@ -42,33 +43,29 @@ class TelemetryReceiver(gRPCMdtDialoutBase):
             #
             d = proto_to_dict(t)
 
-            #
-            # Walk data_gpbkv fields per YANG Suite code
-            #
-            # lines = []
-            # for gpb in t.data_gpbkv:
-            #     lines += self.walk_fields(gpb.fields)
-                
             with logging_lock:
                 logger.debug('--> CALLBACK START')
                 logger.debug('Messages Received = %d', self.msgs_recvd)
-                logger.debug('Node Id         = "{}"'.format(t.node_id_str))
-                logger.debug('Msg Timestamp   = "{}"'.format(t.msg_timestamp))
-                logger.debug('Subscription Id = "{}"'.format(t.subscription_id_str))
-                logger.debug('Encoding Path   = "{}"'.format(t.encoding_path))
-                
-                # yang suite lines
-                # for l in lines:
-                #     logger.debug(l)
+                logger.debug('Node Id          = "{}"'.format(t.node_id_str))
+                logger.debug('Subscription Id  = "{}"'.format(t.subscription_id_str))
+                logger.debug('Encoding Path    = "{}"'.format(t.encoding_path))
+                logger.debug('Msg Timestamp    = "{}"'.format(t.msg_timestamp))
+                logger.debug('Collection Id    = "{}"'.format(t.collection_id))
+                logger.debug('Collection Start = "{}"'.format(t.collection_start_time))
+                logger.debug('Collection End   = "{}"'.format(t.collection_end_time))
 
-                # json dict
-                if d:
-                    for l in json.dumps(d, indent=2).splitlines():
+                if t.collection_end_time > 0:
+                    logger.debug('last message for collection_id {}'.format(t.collection_id))
+
+                # json dict of the raw data
+                data_gpbkv = d.get('data_gpbkv')
+                if data_gpbkv:
+                    for l in json.dumps(data_gpbkv, indent=2).splitlines():
                         logger.debug(l)
                 
-            retval = mdt_grpc_dialout_pb2.MdtDialoutArgs()
-            retval.ReqId = req.ReqId
-            await stream.send_message(retval)
+            # retval = mdt_grpc_dialout_pb2.MdtDialoutArgs()
+            # retval.ReqId = req.ReqId
+            # await stream.send_message(retval)
 
 
 #
