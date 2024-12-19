@@ -27,15 +27,25 @@ mdt_grpc_dialout_pb2_grpc.py  telemetry_pb2.py
 
 ## Run The Sample Server
 
-The sample server to receive telemetry is in the file `server.py`, and success looks like:
+The sample server to receive telemetry is in the file `async_server.py`, and success looks like:
 
 ```
-$ ./server.py
+$ ./async_server.py -v
 2018-07-22 21:44:41,391:__main__:DEBUG:Create gRPC server
-2018-07-22 21:44:41,398:__main__:DEBUG:Add MDT Dialout Service to gRPC server
-2018-07-22 21:44:41,399:__main__:DEBUG:Adding insecure port 0.0.0.0:2345
-2018-07-22 21:44:41,400:__main__:DEBUG:Starting server
-2018-07-22 21:44:41,402:__main__:DEBUG:Entering infinite loop
+2018-07-22 21:44:41,398:__main__:DEBUG:serving on 0.0.0.0:57850
 ```
 
-By default, the server runs on port `2345`, bound to `0.0.0.0`.
+By default, the server runs on port `57850`, bound to `0.0.0.0`.
+
+## TLS
+
+A server key and certificate (in PEM format) can be specified with the `-k` and `-c` options, respectively. This will automatically enable TLS on the connection.  Adding the option `--client-ca` will also enable client authentication using the provided CA certificate.
+
+Example:
+
+```
+$ ./async_server.py -c ./keys/server.crt -k ./keys/server.key --client-ca ./keys/ca.crt -v
+2024-12-19 11:01:42,528:__main__:DEBUG:Create gRPC server
+2024-12-19 11:01:42,663:__main__:DEBUG:Running with TLS, certfile ./keys/server.crt and keyfile ./keys/server.key
+2024-12-19 11:01:42,666:__main__:DEBUG:serving on 0.0.0.0:57850
+```
