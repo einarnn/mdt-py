@@ -15,6 +15,8 @@ import asyncio
 import json
 import logging
 import mdt_grpc_dialout_pb2
+import os
+import ssl
 import time
 from argparse import ArgumentParser
 
@@ -71,13 +73,26 @@ class TelemetryReceiver(gRPCMdtDialoutBase):
 #
 # Really simple gRPC server dor dialout telemetry. No TLS, plain TCP.
 #
-async def serve(bind_address='0.0.0.0', port=57850):
+async def serve(bind_address='0.0.0.0', port=57850, certfile=None, keyfile=None, client_ca=None):
 
     logger.debug('Create gRPC server')
     server = Server([TelemetryReceiver()])
+    ssl_options = {}
+    if certfile is not None:
+        logger.debug(f"Running with TLS, certfile {certfile} and keyfile {keyfile}")
+        ssl_ctx = ssl.SSLContext()
+        ssl_ctx.load_cert_chain(certfile=certfile, keyfile=keyfile)
+        if client_ca is not None:
+            ssl_ctx.load_verify_locations(cafile=client_ca)
+            ssl_ctx.verify_mode = ssl.CERT_REQUIRED
+        ssl_ctx.set_alpn_protocols(['h2'])
+        keylog_filename = os.environ.get('SSLKEYLOGFILE')
+        if keylog_filename is not None:
+            ssl_ctx.keylog_filename = keylog_filename
+        ssl_options = {"ssl": ssl_ctx}
 
     with graceful_exit([server]):
-        await server.start(bind_address, port)
+        await server.start(bind_address, port, **ssl_options)
         logger.debug('serving on %s:%d', bind_address, port)
         await server.wait_closed()
 
@@ -99,7 +114,25 @@ if __name__ == "__main__":
     parser.add_argument(
         '-v', '--verbose', action='store_true',
         help="Exceedingly verbose logging to the console")
+    parser.add_argument(
+        '-c', '--cert',
+        help="Specify certificate chain file (will use TLS; requires -k)")
+    parser.add_argument(
+        '-k', '--key',
+        help="Specify key file (will use TLS; requires -c)")
+    parser.add_argument(
+        '--client-ca',
+        help="Specify CA file to verify client certificate (will use TLS; requires -c and -k)")
     args = parser.parse_args()
+
+    if args.cert is not None:
+        assert args.key is not None, "Key must be specified if certificate is specified"
+
+    if args.key is not None:
+        assert args.cert is not None, "Certificate must be specified if key is specified"
+
+    if args.client_ca is not None:
+        assert args.cert is not None, "Certificate and key must be specified if client CA is specified"
 
     #
     # setup logging to have a wauy to see what's happening
@@ -114,4 +147,8 @@ if __name__ == "__main__":
     #
     # run the server
     #
-    asyncio.run(serve(bind_address=args.bind_address, port=args.port))
+    asyncio.run(serve(bind_address=args.bind_address,
+                      port=args.port,
+                      certfile=args.cert,
+                      keyfile=args.key,
+                      client_ca=args.client_ca))
